@@ -2,6 +2,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover">
 <title>萬事屋</title>
 <style>
 
@@ -20,11 +23,16 @@
 	<button id="btnLogOut" onclick="logOut()" style="display: none;margin: 20px auto;padding: 20px;">Log Out</button>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
-        function sendShare_Pay() {
-			liff.getProfile().then(profile => {
-				const userDisplayName = profile.displayName;
+        async function sendShare_Pay() {
+			
+			name = await liff.getProfile().then((profile) => {
+				return profile.displayName;
+			}).catch((err) => {
+				return err;
+			});
 				
-				liff.shareTargetPicker([{
+			const result = await liff.shareTargetPicker([
+				{
 					type: "flex",
 					altText: "已收到NT$ 2000的轉帳。",
 					contents: {
@@ -131,21 +139,34 @@
 		                            separator: true
 		                            }
 		                        }
+					}
 				}
-			}]).then(() => {
-			    console.log("Success sending message");
-			    liff.closeWindow();
-		    	}).catch((err) => {
-			    console.error("Sending message failed", err);
-		    	});
-			})
+			])
+
+			if (result) {
+				alert(`[${result.status}] Message sent!`)
+			} else {
+				const [majorVer, minorVer, patchVer] = (liff.getLineVersion() || "").split('.');
+
+				if (minorVer === undefined) {
+					alert('ShareTargetPicker was canceled in external browser')
+					return
+				}
+
+				if (parseInt(majorVer) >= 10 && parseInt(minorVer) >= 10 && parseInt(patchVer) > 0) {
+					alert('ShareTargetPicker was canceled in LINE app')
+				}
+			}
+
 		}
-	    	function logOut() {
+	    
+		function logOut() {
 			liff.logout()
 			window.location.reload()
 		}
-		function main() {
-			liff.init({ liffId: "2006888326-Lg6n55jd" })
+
+		async function main() {
+			await liff.init({ liffId: "2006888326-Lg6n55jd" })
 			if (liff.isLoggedIn()) {
 				document.getElementById("btnShare").style.display = "block"
 				if (!liff.isInClient()) {
@@ -155,6 +176,7 @@
 				document.getElementById("btnLogin").style.display = "block"
 			}
 		}
+
         main()
     </script>
 </body>
