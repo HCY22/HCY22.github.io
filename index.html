@@ -130,23 +130,13 @@
 		                            separator: true
 		                            }
 		                        }
-						}
 				}
-			])
-			if (result) {
-				alert(`[${result.status}] Message sent!`)
-			} else {
-				const [majorVer, minorVer, patchVer] = (liff.getLineVersion() || "").split('.');
-
-				if (minorVer === undefined) {
-					alert('ShareTargetPicker was canceled in external browser')
-					return
-				}
-
-				if (parseInt(majorVer) >= 10 && parseInt(minorVer) >= 10 && parseInt(patchVer) > 0) {
-					alert('ShareTargetPicker was canceled in LINE app')
-				}
-			}
+			}]).then(() => {
+			    console.log("Success sending message");
+			    liff.closeWindow();
+		    	}).catch((err) => {
+			    console.error("Sending message failed", err);
+		    	});
 		}
 	    	function logOut() {
 			liff.logout()
